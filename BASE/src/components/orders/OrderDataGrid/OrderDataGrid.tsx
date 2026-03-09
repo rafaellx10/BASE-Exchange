@@ -207,18 +207,15 @@ const OrderDataGrid = ({
                 <option value="SELL">Venda</option>
               </select>
             </div>
-          </div>
 
-          <div className="mt-4 flex justify-end gap-3">
-            <button onClick={resetFilters} className={styles.filterResetButton}>
-              Limpar Filtros
-            </button>
-            <button
-              onClick={() => updateFilter(filters)}
-              className={styles.filterButton}
-            >
-              Aplicar Filtros
-            </button>
+            <div className="flex items-end">
+              <button
+                onClick={resetFilters}
+                className={styles.filterResetButton}
+              >
+                Limpar Filtros
+              </button>
+            </div>
           </div>
         </div>
       )}
