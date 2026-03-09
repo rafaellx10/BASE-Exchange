@@ -3,6 +3,7 @@ import OrderDataGrid from '@/components/orders/OrderDataGrid/OrderDataGrid';
 import { useOrderStore } from '@/stores/orderStore';
 import type { Order, OrderSide, OrderStatus } from '@/types/order';
 import BaseLoading from '@/components/BaseLoading/BaseLoading';
+import BaseModal from '@/components/BaseModal/BaseModal';
 import './App.css';
 
 // Import mock data directly
@@ -11,6 +12,8 @@ import mockOrdersData from '@/mock/db.json';
 function App() {
   const { setOrders, setLoading, setError, isLoading } = useOrderStore();
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   // Helper to convert raw JSON data to typed Order
   const convertToTypedOrders = (rawOrders: any[]): Order[] => {
@@ -48,8 +51,8 @@ function App() {
 
   const handleOrderSelect = (order: Order) => {
     console.log('Selected order:', order);
-    // In a real app, you would open a modal or navigate to details
-    alert(`Order ${order.id} selected`);
+    setSelectedOrder(order);
+    setIsOrderModalOpen(true);
   };
 
   // Show loading during initial 3 seconds or when store is loading
@@ -149,6 +152,93 @@ function App() {
           </div>
         </div>
       </main>
+
+      <BaseModal
+        isOpen={isOrderModalOpen}
+        onClose={() => {
+          setIsOrderModalOpen(false);
+          setSelectedOrder(null);
+        }}
+      >
+        {selectedOrder && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Detalhes da Ordem
+            </h2>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium text-gray-700">ID:</span>
+                <p className="text-gray-900 break-all">{selectedOrder.id}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Instrumento:</span>
+                <p className="text-gray-900">{selectedOrder.instrument}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Lado:</span>
+                <p className="text-gray-900">
+                  {selectedOrder.side === 'BUY' ? 'Compra' : 'Venda'}
+                </p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Status:</span>
+                <p className="text-gray-900">{selectedOrder.status}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Preço:</span>
+                <p className="text-gray-900">
+                  {selectedOrder.price.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                </p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Quantidade:</span>
+                <p className="text-gray-900">
+                  {selectedOrder.quantity.toLocaleString('pt-BR')}
+                </p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">
+                  Quantidade Restante:
+                </span>
+                <p className="text-gray-900">
+                  {selectedOrder.remainingQuantity.toLocaleString('pt-BR')}
+                </p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Criada em:</span>
+                <p className="text-gray-900">
+                  {new Date(selectedOrder.createdAt).toLocaleString('pt-BR')}
+                </p>
+              </div>
+              {selectedOrder.updatedAt !== selectedOrder.createdAt && (
+                <div>
+                  <span className="font-medium text-gray-700">
+                    Atualizada em:
+                  </span>
+                  <p className="text-gray-900">
+                    {new Date(selectedOrder.updatedAt).toLocaleString('pt-BR')}
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOrderModalOpen(false);
+                  setSelectedOrder(null);
+                }}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
+      </BaseModal>
 
       <footer className="mt-8 text-center text-gray-500 text-sm">
         <p>
