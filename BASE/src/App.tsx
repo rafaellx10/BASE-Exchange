@@ -1,23 +1,38 @@
+import { useEffect, useState } from 'react';
 import OrderDataGrid from '@/components/orders/OrderDataGrid/OrderDataGrid';
 import { useOrderStore } from '@/stores/orderStore';
-import { useEffect } from 'react';
-import { orderService } from '@/services/orderService';
-import type { Order } from '@/types/order';
+import type { Order, OrderSide, OrderStatus } from '@/types/order';
+import BaseLoading from '@/components/BaseLoading/BaseLoading';
 import './App.css';
 
+// Import mock data directly
+import mockOrdersData from '@/mock/db.json';
+
 function App() {
-  const { setOrders, setLoading, setError } = useOrderStore();
+  const { setOrders, setLoading, setError, isLoading } = useOrderStore();
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Helper to convert raw JSON data to typed Order
+  const convertToTypedOrders = (rawOrders: any[]): Order[] => {
+    return rawOrders.map(order => ({
+      ...order,
+      side: order.side as OrderSide,
+      status: order.status as OrderStatus,
+    }));
+  };
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 3000); // 3 segundos de loading forçado
+
     const loadOrders = async () => {
       try {
         setLoading(true);
-        // In a real app, you would fetch from API
-        // For now, we'll use the mock data directly
-        const mockOrders = Array.from({ length: 15 }, () =>
-          orderService.generateMockOrder()
-        );
-        setOrders(mockOrders);
+        // Use the fixed mock data from db.json
+        const typedOrders = convertToTypedOrders(mockOrdersData.orders);
+        console.log('Loading orders from db.json:', typedOrders.length);
+        setOrders(typedOrders);
       } catch (error) {
         setError('Failed to load orders');
         console.error('Error loading orders:', error);
@@ -27,6 +42,8 @@ function App() {
     };
 
     loadOrders();
+
+    return () => clearTimeout(timer);
   }, [setOrders, setLoading, setError]);
 
   const handleOrderSelect = (order: Order) => {
@@ -35,8 +52,25 @@ function App() {
     alert(`Order ${order.id} selected`);
   };
 
+  // Show loading during initial 3 seconds or when store is loading
+  const showLoading = isInitialLoading || isLoading;
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      {showLoading && (
+        <div className="fixed inset-0 bg-white/80 z-50 flex flex-col items-center justify-center">
+          <BaseLoading marginTopContainer="0" size="lg" />
+          <div className="mt-6 text-center">
+            <p className="text-gray-700 font-medium mb-2">
+              Carregando sistema de ordens...
+            </p>
+            <p className="text-gray-500 text-sm">
+              A preparação da plataforma pode levar alguns instantes
+            </p>
+          </div>
+        </div>
+      )}
+
       <header className="mb-8">
         <div className="flex items-center justify-between">
           <div>
@@ -58,8 +92,14 @@ function App() {
           </div>
         </div>
         <div className="mt-4 flex items-center text-sm text-gray-500">
-          <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-          <span>Sistema operacional - Conectado à API</span>
+          <span
+            className={`inline-block w-3 h-3 rounded-full mr-2 ${showLoading ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}
+          ></span>
+          <span>
+            {showLoading
+              ? 'Conectando à API...'
+              : 'Sistema operacional - Conectado à API'}
+          </span>
         </div>
       </header>
 
@@ -84,7 +124,9 @@ function App() {
                   Status do Sistema
                 </h3>
                 <p className="text-blue-600 text-sm">
-                  Todas as funcionalidades estão operacionais
+                  {showLoading
+                    ? 'Inicializando...'
+                    : 'Todas as funcionalidades estão operacionais'}
                 </p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg">

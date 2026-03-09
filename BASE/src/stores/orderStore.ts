@@ -51,6 +51,57 @@ const defaultPagination: PaginationParams = {
   sortOrder: 'desc',
 };
 
+// Helper function to apply filters to orders
+const applyFilters = (orders: Order[], filters: OrderFilter): Order[] => {
+  console.log('Applying filters:', filters);
+  return orders.filter(order => {
+    // Filter by ID (partial match, case-insensitive)
+    if (
+      filters.id &&
+      !order.id.toLowerCase().includes(filters.id.toLowerCase())
+    ) {
+      return false;
+    }
+
+    // Filter by instrument (partial match, case-insensitive)
+    if (
+      filters.instrument &&
+      !order.instrument.toLowerCase().includes(filters.instrument.toLowerCase())
+    ) {
+      return false;
+    }
+
+    // Filter by status (exact match)
+    if (filters.status && order.status !== filters.status) {
+      return false;
+    }
+
+    // Filter by side (exact match)
+    if (filters.side && order.side !== filters.side) {
+      return false;
+    }
+
+    // Filter by date range (if dates are provided)
+    if (filters.startDate) {
+      const startDate = new Date(filters.startDate);
+      const orderDate = new Date(order.createdAt);
+      if (orderDate < startDate) {
+        return false;
+      }
+    }
+
+    if (filters.endDate) {
+      const endDate = new Date(filters.endDate);
+      const orderDate = new Date(order.createdAt);
+      if (orderDate > endDate) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+};
+
 export const useOrderStore = create<OrderStore>(set => ({
   // Initial state
   orders: [],
@@ -64,7 +115,14 @@ export const useOrderStore = create<OrderStore>(set => ({
 
   // Actions
   setOrders: orders =>
-    set({ orders, filteredOrders: orders, totalItems: orders.length }),
+    set(state => {
+      const filteredOrders = applyFilters(orders, state.filters);
+      return {
+        orders,
+        filteredOrders,
+        totalItems: filteredOrders.length,
+      };
+    }),
   setFilteredOrders: filteredOrders =>
     set({ filteredOrders, totalItems: filteredOrders.length }),
   setSelectedOrder: selectedOrder => set({ selectedOrder }),
@@ -72,15 +130,26 @@ export const useOrderStore = create<OrderStore>(set => ({
   setError: error => set({ error }),
 
   updateFilter: filterUpdates =>
-    set(state => ({
-      filters: { ...state.filters, ...filterUpdates },
-      pagination: { ...state.pagination, page: 1 }, // Reset to first page when filter changes
-    })),
+    set(state => {
+      const newFilters = { ...state.filters, ...filterUpdates };
+      const filteredOrders = applyFilters(state.orders, newFilters);
+      return {
+        filters: newFilters,
+        filteredOrders,
+        pagination: { ...state.pagination, page: 1 }, // Reset to first page when filter changes
+        totalItems: filteredOrders.length,
+      };
+    }),
 
   resetFilters: () =>
-    set({
-      filters: defaultFilters,
-      pagination: { ...defaultPagination, page: 1 },
+    set(state => {
+      const filteredOrders = applyFilters(state.orders, defaultFilters);
+      return {
+        filters: defaultFilters,
+        filteredOrders,
+        pagination: { ...defaultPagination, page: 1 },
+        totalItems: filteredOrders.length,
+      };
     }),
 
   updatePagination: paginationUpdates =>
@@ -94,11 +163,15 @@ export const useOrderStore = create<OrderStore>(set => ({
     })),
 
   addOrder: order =>
-    set(state => ({
-      orders: [order, ...state.orders],
-      filteredOrders: [order, ...state.filteredOrders],
-      totalItems: state.totalItems + 1,
-    })),
+    set(state => {
+      const newOrders = [order, ...state.orders];
+      const filteredOrders = applyFilters(newOrders, state.filters);
+      return {
+        orders: newOrders,
+        filteredOrders,
+        totalItems: filteredOrders.length,
+      };
+    }),
 
   updateOrder: (id, updates) =>
     set(state => {
@@ -109,9 +182,12 @@ export const useOrderStore = create<OrderStore>(set => ({
             : order
         );
 
+      const newOrders = updateOrderInArray(state.orders);
+      const filteredOrders = applyFilters(newOrders, state.filters);
+
       return {
-        orders: updateOrderInArray(state.orders),
-        filteredOrders: updateOrderInArray(state.filteredOrders),
+        orders: newOrders,
+        filteredOrders,
         selectedOrder:
           state.selectedOrder?.id === id
             ? {
@@ -120,6 +196,7 @@ export const useOrderStore = create<OrderStore>(set => ({
                 updatedAt: new Date().toISOString(),
               }
             : state.selectedOrder,
+        totalItems: filteredOrders.length,
       };
     }),
 
@@ -128,12 +205,15 @@ export const useOrderStore = create<OrderStore>(set => ({
       const filterOrderFromArray = (orders: Order[]) =>
         orders.filter(order => order.id !== id);
 
+      const newOrders = filterOrderFromArray(state.orders);
+      const filteredOrders = applyFilters(newOrders, state.filters);
+
       return {
-        orders: filterOrderFromArray(state.orders),
-        filteredOrders: filterOrderFromArray(state.filteredOrders),
+        orders: newOrders,
+        filteredOrders,
         selectedOrder:
           state.selectedOrder?.id === id ? null : state.selectedOrder,
-        totalItems: state.totalItems - 1,
+        totalItems: filteredOrders.length,
       };
     }),
 }));

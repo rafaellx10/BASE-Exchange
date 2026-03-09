@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Order, OrderSide, OrderStatus } from '@/types/order';
 import { useOrderStore } from '@/stores/orderStore';
+import BaseLoading from '@/components/BaseLoading/BaseLoading';
 import styles from './OrderDataGrid.module.css';
 
 interface OrderDataGridProps {
@@ -131,9 +132,9 @@ const OrderDataGrid = ({
 
   if (isLoading) {
     return (
-      <div className={styles.loading}>
-        <div className={styles.loadingSpinner} />
-        <span className="ml-3 text-gray-600">Carregando ordens...</span>
+      <div className="flex flex-col items-center justify-center p-8 space-y-4">
+        <BaseLoading size="md" marginTopContainer="0" />
+        <span className="text-gray-600">Carregando ordens...</span>
       </div>
     );
   }
