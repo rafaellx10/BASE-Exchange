@@ -24,11 +24,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    /* Ignore deprecations for baseUrl */
-    "ignoreDeprecations": "6.0",
-
-    /* Paths aliases */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "types/*": ["./src/types/*"],
