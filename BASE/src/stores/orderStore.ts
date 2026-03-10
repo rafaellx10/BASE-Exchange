@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Order, OrderFilter, PaginationParams } from '@/types/order';
+import { matchOrder } from '@/utils/orderMatching';
 
 interface OrderStore {
   // State
@@ -165,10 +166,10 @@ export const useOrderStore = create<OrderStore>(set => ({
 
   addOrder: order =>
     set(state => {
-      const newOrders = [order, ...state.orders];
-      const filteredOrders = applyFilters(newOrders, state.filters);
+      const { updatedOrders } = matchOrder(order, state.orders);
+      const filteredOrders = applyFilters(updatedOrders, state.filters);
       return {
-        orders: newOrders,
+        orders: updatedOrders,
         filteredOrders,
         totalItems: filteredOrders.length,
       };

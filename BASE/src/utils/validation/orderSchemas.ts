@@ -14,7 +14,6 @@ export const orderCreateSchema = z.object({
     }),
   quantity: z
     .number()
-    .int('Quantidade deve ser inteira')
     .positive('Quantidade deve ser maior que zero')
     .refine(value => !Number.isNaN(value), {
       message: 'Quantidade deve ser um número válido',
