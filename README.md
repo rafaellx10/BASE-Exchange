@@ -1,6 +1,6 @@
 # BASE Exchange - Sistema de Gerenciamento de Ordens
 
-![Sistema BASE Exchange - Gerenciamento de Ordens](/BASE/src/assets/image.png)
+![Sistema BASE Exchange - Gerenciamento de Ordens](/src/assets/image.png)
 
 _Imagem do sistema de gerenciamento de ordens de compra e venda de ativos financeiros_
 
