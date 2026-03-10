@@ -37,6 +37,10 @@ const mockOrders = [
 
 describe('OrderDataGrid', () => {
   const defaultMockStore = {
+    orders: mockOrders,
+    filteredOrders: mockOrders,
+    selectedOrder: null,
+    error: null,
     filters: {
       id: '',
       instrument: '',
@@ -51,18 +55,21 @@ describe('OrderDataGrid', () => {
       sortBy: 'createdAt' as const,
       sortOrder: 'desc' as const,
     },
+    totalItems: mockOrders.length,
     isLoading: false,
+    setOrders: vi.fn(),
+    setFilteredOrders: vi.fn(),
+    setSelectedOrder: vi.fn(),
+    setLoading: vi.fn(),
+    setError: vi.fn(),
     updateFilter: vi.fn(),
     resetFilters: vi.fn(),
     updatePagination: vi.fn(),
     goToPage: vi.fn(),
-    getPaginatedOrders: vi.fn().mockReturnValue({
-      data: mockOrders,
-      total: mockOrders.length,
-      page: 1,
-      limit: 10,
-      totalPages: 1,
-    }),
+    addOrder: vi.fn(),
+    updateOrder: vi.fn(),
+    deleteOrder: vi.fn(),
+    cancelOrder: vi.fn(),
   };
 
   beforeEach(() => {
@@ -74,8 +81,8 @@ describe('OrderDataGrid', () => {
 
     render(<OrderDataGrid />);
 
-    // Verifica se o título da tabela está presente
-    expect(screen.getByText('Ordens de Negociação')).toBeInTheDocument();
+    // Verifica se a tabela está presente usando role
+    expect(screen.getByRole('table')).toBeInTheDocument();
   });
 
   it('deve mostrar a tabela com ordens quando houver dados', () => {
@@ -86,8 +93,9 @@ describe('OrderDataGrid', () => {
     // Verifica se as ordens são exibidas
     expect(screen.getByText('PETR4')).toBeInTheDocument();
     expect(screen.getByText('VALE3')).toBeInTheDocument();
-    expect(screen.getByText('Compra')).toBeInTheDocument();
-    expect(screen.getByText('Venda')).toBeInTheDocument();
+    // Usar getAllByText porque "Compra" e "Venda" aparecem no dropdown de filtro e nos badges
+    expect(screen.getAllByText('Compra').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Venda').length).toBeGreaterThan(0);
   });
 
   it('deve mostrar estado de carregamento quando isLoading é true', () => {
@@ -104,18 +112,14 @@ describe('OrderDataGrid', () => {
   it('deve mostrar mensagem de vazio quando não houver ordens', () => {
     (useOrderStore as any).mockReturnValue({
       ...defaultMockStore,
-      getPaginatedOrders: vi.fn().mockReturnValue({
-        data: [],
-        total: 0,
-        page: 1,
-        limit: 10,
-        totalPages: 0,
-      }),
+      orders: [],
+      filteredOrders: [],
+      totalItems: 0,
     });
 
     render(<OrderDataGrid />);
 
-    expect(screen.getByText('Nenhuma ordem encontrada.')).toBeInTheDocument();
+    expect(screen.getByText(/Nenhuma ordem encontrada\./)).toBeInTheDocument();
   });
 
   it('deve chamar onOrderSelect quando uma linha é clicada', () => {
@@ -168,8 +172,9 @@ describe('OrderDataGrid', () => {
 
     render(<OrderDataGrid />);
 
-    expect(screen.getByText('Executada')).toBeInTheDocument();
-    expect(screen.getByText('Parcial')).toBeInTheDocument();
+    // Usar getAllByText porque "Executada" e "Parcial" aparecem no dropdown de filtro e nos badges
+    expect(screen.getAllByText('Executada').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Parcial').length).toBeGreaterThan(0);
   });
 
   it('deve mostrar badges de lado com cores corretas', () => {
@@ -177,7 +182,8 @@ describe('OrderDataGrid', () => {
 
     render(<OrderDataGrid />);
 
-    expect(screen.getByText('Compra')).toBeInTheDocument();
-    expect(screen.getByText('Venda')).toBeInTheDocument();
+    // Usar getAllByText porque "Compra" aparece no dropdown de filtro e nos badges
+    expect(screen.getAllByText('Compra').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Venda').length).toBeGreaterThan(0);
   });
 });

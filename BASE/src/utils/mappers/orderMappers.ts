@@ -1,18 +1,7 @@
-import type { Order, OrderSide, OrderStatus } from '@/types/order';
-import type { RawOrder } from '@/models/orderModel';
+import type { Order } from '@/types/order';
+import { ordersSchema } from '@/types/order';
 
-// Converte o modelo original (RawOrder) vindo de JSON/API para o tipo forte Order
-export const convertToTypedOrders = (rawOrders: RawOrder[]): Order[] => {
-  return rawOrders.map(order => ({
-    id: order.id,
-    instrument: order.instrument,
-    side: order.side as OrderSide,
-    price: order.price,
-    quantity: order.quantity,
-    remainingQuantity: order.remainingQuantity,
-    status: order.status as OrderStatus,
-    createdAt: order.createdAt,
-    updatedAt: order.updatedAt,
-    userId: order.userId,
-  }));
+// Converte/valida o input vindo de JSON/API para o tipo forte Order (runtime-safe)
+export const convertToTypedOrders = (input: unknown): Order[] => {
+  return ordersSchema.parse(input);
 };

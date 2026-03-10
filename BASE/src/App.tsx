@@ -9,7 +9,6 @@ import './App.css';
 
 // Import mock data directly
 import mockOrdersData from '@/mock/db.json';
-import type { RawOrder } from '@/models/orderModel';
 import { convertToTypedOrders } from '@/utils/mappers/orderMappers';
 
 function App() {
@@ -28,10 +27,8 @@ function App() {
     const loadOrders = async () => {
       try {
         setLoading(true);
-        // Usa os dados fixos do db.json e converte explicitamente para Order
-        const typedOrders = convertToTypedOrders(
-          mockOrdersData.orders as RawOrder[]
-        );
+        // Usa os dados fixos do db.json e valida/parseia para Order
+        const typedOrders = convertToTypedOrders(mockOrdersData.orders);
         console.log('Loading orders from db.json:', typedOrders.length);
         setOrders(typedOrders);
       } catch (error) {

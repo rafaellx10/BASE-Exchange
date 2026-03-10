@@ -1,6 +1,9 @@
 export type OrderSide = 'BUY' | 'SELL';
 export type OrderStatus = 'OPEN' | 'PARTIAL' | 'EXECUTED' | 'CANCELLED';
 
+import { z } from 'zod';
+
+// Modelo de domínio forte usado dentro da aplicação
 export interface Order {
   id: string;
   instrument: string;
@@ -13,6 +16,28 @@ export interface Order {
   updatedAt: string;
   userId?: string;
 }
+
+/**
+ * Runtime validation/parsing
+ *
+ * Objetivo: evitar `as Order` espalhado pelo código quando os dados vêm
+ * de JSON/API. Em vez disso, fazemos parse/validação e retornamos um `Order`
+ * confiável para o domínio.
+ */
+export const orderSchema = z.object({
+  id: z.string(),
+  instrument: z.string(),
+  side: z.enum(['BUY', 'SELL']),
+  price: z.number(),
+  quantity: z.number(),
+  remainingQuantity: z.number(),
+  status: z.enum(['OPEN', 'PARTIAL', 'EXECUTED', 'CANCELLED']),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  userId: z.string().optional(),
+});
+
+export const ordersSchema = z.array(orderSchema);
 
 export interface OrderCreateRequest {
   instrument: string;
