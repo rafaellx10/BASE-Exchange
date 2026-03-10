@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import OrderDataGrid from '@/components/orders/OrderDataGrid/OrderDataGrid';
+import OrderDataGrid from '@/components/Orders/OrderDataGrid/OrderDataGrid';
 import { useOrderStore } from '@/stores/orderStore';
 
 // Mock do store Zustand
