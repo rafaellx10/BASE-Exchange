@@ -1,5 +1,9 @@
 # BASE Exchange - Sistema de Gerenciamento de Ordens
 
+![Sistema BASE Exchange - Gerenciamento de Ordens](image.png)
+
+_Imagem do sistema de gerenciamento de ordens de compra e venda de ativos financeiros_
+
 Sistema front-end para visualização e gerenciamento de ordens de compra e venda de ativos financeiros, desenvolvido como parte de um desafio técnico.
 
 ## ✅ Requisitos
