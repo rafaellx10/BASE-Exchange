@@ -1,5 +1,10 @@
 import { create } from 'zustand';
-import type { Order, OrderFilter, PaginationParams } from '@/types/order';
+import type {
+  Order,
+  OrderFilter,
+  PaginationParams,
+  OrderStatus,
+} from '@/types/order';
 import { matchOrder } from '@/utils/orderMatching';
 
 interface OrderStore {
@@ -104,7 +109,7 @@ const applyFilters = (orders: Order[], filters: OrderFilter): Order[] => {
   });
 };
 
-export const useOrderStore = create<OrderStore>(set => ({
+export const useOrderStore = create<OrderStore>()(set => ({
   // Initial state
   orders: [],
   filteredOrders: [],
@@ -116,11 +121,18 @@ export const useOrderStore = create<OrderStore>(set => ({
   totalItems: 0,
 
   // Actions
-  setOrders: orders =>
+  setOrders: (orders: Order[]) =>
     set(state => {
-      const filteredOrders = applyFilters(orders, state.filters);
+      // Garante que status esteja sempre alinhado com OrderStatus
+      const normalizedOrders: Order[] = orders.map(order => ({
+        ...order,
+        status: order.status as OrderStatus,
+      }));
+
+      const filteredOrders = applyFilters(normalizedOrders, state.filters);
+
       return {
-        orders,
+        orders: normalizedOrders,
         filteredOrders,
         totalItems: filteredOrders.length,
       };
@@ -177,14 +189,14 @@ export const useOrderStore = create<OrderStore>(set => ({
 
   updateOrder: (id, updates) =>
     set(state => {
-      const updateOrderInArray = (orders: Order[]) =>
-        orders.map(order =>
+      const updateOrderInArray = (orders: Order[]): Order[] =>
+        orders.map<Order>(order =>
           order.id === id
             ? { ...order, ...updates, updatedAt: new Date().toISOString() }
             : order
         );
 
-      const newOrders = updateOrderInArray(state.orders);
+      const newOrders: Order[] = updateOrderInArray(state.orders);
       const filteredOrders = applyFilters(newOrders, state.filters);
 
       return {
@@ -204,10 +216,10 @@ export const useOrderStore = create<OrderStore>(set => ({
 
   deleteOrder: id =>
     set(state => {
-      const filterOrderFromArray = (orders: Order[]) =>
+      const filterOrderFromArray = (orders: Order[]): Order[] =>
         orders.filter(order => order.id !== id);
 
-      const newOrders = filterOrderFromArray(state.orders);
+      const newOrders: Order[] = filterOrderFromArray(state.orders);
       const filteredOrders = applyFilters(newOrders, state.filters);
 
       return {
@@ -234,14 +246,14 @@ export const useOrderStore = create<OrderStore>(set => ({
 
       const now = new Date().toISOString();
 
-      const cancelInArray = (orders: Order[]) =>
-        orders.map(order =>
+      const cancelInArray = (orders: Order[]): Order[] =>
+        orders.map<Order>(order =>
           order.id === id
             ? { ...order, status: 'CANCELLED', updatedAt: now }
             : order
         );
 
-      const newOrders = cancelInArray(state.orders);
+      const newOrders: Order[] = cancelInArray(state.orders);
       const filteredOrders = applyFilters(newOrders, state.filters);
 
       return {

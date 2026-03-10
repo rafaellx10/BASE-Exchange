@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import OrderDataGrid from '@/components/Orders/OrderDataGrid/OrderDataGrid';
 import { useOrderStore } from '@/stores/orderStore';
-import type { Order, OrderSide, OrderStatus } from '@/types/order';
+import type { Order } from '@/types/order';
 import BaseLoading from '@/components/BaseLoading/BaseLoading';
 import BaseModal from '@/components/BaseModal/BaseModal';
 import CreateOrderForm from '@/components/Orders/CreateOrderForm';
@@ -9,6 +9,8 @@ import './App.css';
 
 // Import mock data directly
 import mockOrdersData from '@/mock/db.json';
+import type { RawOrder } from '@/models/orderModel';
+import { convertToTypedOrders } from '@/utils/mappers/orderMappers';
 
 function App() {
   const { setOrders, setLoading, setError, isLoading } = useOrderStore();
@@ -18,15 +20,6 @@ function App() {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const cancelOrder = useOrderStore(state => state.cancelOrder);
 
-  // Helper to convert raw JSON data to typed Order
-  const convertToTypedOrders = (rawOrders: any[]): Order[] => {
-    return rawOrders.map(order => ({
-      ...order,
-      side: order.side as OrderSide,
-      status: order.status as OrderStatus,
-    }));
-  };
-
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
@@ -35,8 +28,10 @@ function App() {
     const loadOrders = async () => {
       try {
         setLoading(true);
-        // Use the fixed mock data from db.json
-        const typedOrders = convertToTypedOrders(mockOrdersData.orders);
+        // Usa os dados fixos do db.json e converte explicitamente para Order
+        const typedOrders = convertToTypedOrders(
+          mockOrdersData.orders as RawOrder[]
+        );
         console.log('Loading orders from db.json:', typedOrders.length);
         setOrders(typedOrders);
       } catch (error) {
