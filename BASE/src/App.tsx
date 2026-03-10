@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import OrderDataGrid from '@/components/orders/OrderDataGrid/OrderDataGrid';
+import OrderDataGrid from '@/components/Orders/OrderDataGrid/OrderDataGrid';
 import { useOrderStore } from '@/stores/orderStore';
 import type { Order, OrderSide, OrderStatus } from '@/types/order';
 import BaseLoading from '@/components/BaseLoading/BaseLoading';
 import BaseModal from '@/components/BaseModal/BaseModal';
-import CreateOrderForm from '@/components/orders/CreateOrderForm';
+import CreateOrderForm from '@/components/Orders/CreateOrderForm';
 import './App.css';
 
 // Import mock data directly
@@ -30,7 +30,7 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
-    }, 3000); // 3 segundos de loading forçado
+    }, 1000); // 1 segundos de loading forçado
 
     const loadOrders = async () => {
       try {
