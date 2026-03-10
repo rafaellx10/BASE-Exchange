@@ -16,6 +16,7 @@ function App() {
   const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const cancelOrder = useOrderStore(state => state.cancelOrder);
 
   // Helper to convert raw JSON data to typed Order
   const convertToTypedOrders = (rawOrders: any[]): Order[] => {
@@ -55,6 +56,24 @@ function App() {
     console.log('Selected order:', order);
     setSelectedOrder(order);
     setIsOrderModalOpen(true);
+  };
+
+  const handleCancelSelectedOrder = () => {
+    if (!selectedOrder) return;
+
+    if (selectedOrder.status !== 'OPEN' && selectedOrder.status !== 'PARTIAL') {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Tem certeza que deseja cancelar esta ordem?'
+    );
+
+    if (!confirmed) return;
+
+    cancelOrder(selectedOrder.id);
+    setIsOrderModalOpen(false);
+    setSelectedOrder(null);
   };
 
   // Show loading during initial 3 seconds or when store is loading
@@ -244,17 +263,37 @@ function App() {
                 </div>
               )}
             </div>
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOrderModalOpen(false);
-                  setSelectedOrder(null);
-                }}
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-              >
-                Fechar
-              </button>
+            <div className="flex justify-between items-center pt-2">
+              <div className="text-xs text-gray-500">
+                {(selectedOrder.status === 'OPEN' ||
+                  selectedOrder.status === 'PARTIAL') &&
+                  'Apenas ordens Abertas ou Parciais podem ser canceladas.'}
+                {(selectedOrder.status === 'EXECUTED' ||
+                  selectedOrder.status === 'CANCELLED') &&
+                  'Esta ordem não pode mais ser cancelada.'}
+              </div>
+              <div className="flex space-x-2">
+                {(selectedOrder.status === 'OPEN' ||
+                  selectedOrder.status === 'PARTIAL') && (
+                  <button
+                    type="button"
+                    onClick={handleCancelSelectedOrder}
+                    className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOrderModalOpen(false);
+                    setSelectedOrder(null);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
             </div>
           </div>
         )}

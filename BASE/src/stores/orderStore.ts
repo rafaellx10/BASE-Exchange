@@ -33,6 +33,7 @@ interface OrderStore {
   addOrder: (order: Order) => void;
   updateOrder: (id: string, updates: Partial<Order>) => void;
   deleteOrder: (id: string) => void;
+  cancelOrder: (id: string) => void;
 }
 
 const defaultFilters: OrderFilter = {
@@ -213,6 +214,42 @@ export const useOrderStore = create<OrderStore>(set => ({
         filteredOrders,
         selectedOrder:
           state.selectedOrder?.id === id ? null : state.selectedOrder,
+        totalItems: filteredOrders.length,
+      };
+    }),
+
+  cancelOrder: id =>
+    set(state => {
+      const target = state.orders.find(order => order.id === id);
+
+      if (!target) {
+        return state;
+      }
+
+      if (target.status !== 'OPEN' && target.status !== 'PARTIAL') {
+        // Apenas ordens Abertas ou Parciais podem ser canceladas
+        return state;
+      }
+
+      const now = new Date().toISOString();
+
+      const cancelInArray = (orders: Order[]) =>
+        orders.map(order =>
+          order.id === id
+            ? { ...order, status: 'CANCELLED', updatedAt: now }
+            : order
+        );
+
+      const newOrders = cancelInArray(state.orders);
+      const filteredOrders = applyFilters(newOrders, state.filters);
+
+      return {
+        orders: newOrders,
+        filteredOrders,
+        selectedOrder:
+          state.selectedOrder?.id === id
+            ? { ...state.selectedOrder, status: 'CANCELLED', updatedAt: now }
+            : state.selectedOrder,
         totalItems: filteredOrders.length,
       };
     }),
