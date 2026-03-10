@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import OrderDataGrid from '@/components/Orders/OrderDataGrid/OrderDataGrid';
+import OrderStats from '@/components/Orders/OrderStats';
 import { useOrderStore } from '@/stores/orderStore';
 import type { Order } from '@/types/order';
 import BaseLoading from '@/components/BaseLoading/BaseLoading';
@@ -148,14 +149,7 @@ function App() {
                     : 'Todas as funcionalidades estão operacionais'}
                 </p>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="font-medium text-green-800 mb-1">
-                  Total de Ordens
-                </h3>
-                <p className="text-green-600 text-sm">
-                  15 ordens carregadas • 5 abertas • 3 executadas
-                </p>
-              </div>
+              <OrderStats />
               <div className="bg-purple-50 p-4 rounded-lg">
                 <h3 className="font-medium text-purple-800 mb-1">
                   Última Atualização
